@@ -54,12 +54,12 @@ const [isAuth, toggleIsAuth] = useState(false);
 * De profielpagina is alleen te bezoeken wanneer de gebruiker is ingelogd;
 * Wanneer de gebruiker het inlog-_formulier_ op de Sign in pagina verstuurd, wordt de `login`-functie uit de context
   aangeroepen. Deze functie doet het volgende:
-    * Zet de state op `false`;
+    * Zet de state op `true`;
     * Logt 'Gebruiker is ingelogd!' in de console
     * Stuurt de gebruiker door naar de profielpagina
 * Wanneer de gebruiker op de _uitlog_-knop drukt, wordt de `logout`-functie uit de context aangeroepen. Deze functie
   doet het volgende:
-    * Zet de state op `true`;
+    * Zet de state op `false`;
     * Logt 'Gebruiker is uitgelogd!' in de console
     * Stuurt de gebruiker door naar de homepagina
 
