@@ -1,37 +1,101 @@
-import {createContext, useState} from "react";
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {jwtDecode} from "jwt-decode";
+import axios from "axios";
+import isTokenValid from "../helpers/isTokenValid";
 
 export const AuthContext = createContext({});
 
-function AuthContextProvider({children}) {
-    const [isAuth, setIsAuth] = useState({ isAuth: false, user: '' });
+function AuthContextProvider({ children }) {
+    const [authState, setAuthState] = useState({
+        isAuth: false,
+        user: null,
+        status: "pending",
+    });
     const navigate = useNavigate();
 
-    const login = (user) => {
-        setIsAuth({ isAuth: true, user });
-        console.log(`User ${user} is logged in!`);
-        navigate('/profile');
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+
+        if (token && isTokenValid(token)) {
+            void login(token);
+        } else {
+            setAuthState({
+                isAuth: false,
+                user: null,
+                status: "done",
+            });
+        }
+    }, []);
+
+    async function login(token) {
+        localStorage.setItem("token", token);
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.sub;
+
+        try {
+            const response = await axios.get(
+                `http://localhost:3000/600/users/${userId}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setAuthState({
+                isAuth: true,
+                user: {
+                    username: response.data.username,
+                    email: response.data.email,
+                    id: response.data.id,
+                },
+                status: "done",
+            });
+
+            navigate("/profile");
+        } catch (error) {
+            console.error("Error with login:", error);
+            setAuthState({
+                isAuth: false,
+                user: null,
+                status: "done",
+            });
+        }
     }
 
-    const logout = () => {
-        setIsAuth({ isAuth: false, user: '' });
-        console.log('User is logged out!');
-        navigate('/');
-    };
+    function logout() {
+        try {
+            localStorage.removeItem("token");
+            setAuthState({
+                isAuth: false,
+                user: null,
+                status: "done",
+            });
+            console.log("User logged out!");
+            navigate("/");
+        } catch (error) {
+            console.error("Error with logout:", error);
+        }
+    }
 
-
-    const data = {
-        isAuth,
+    const contextValue = {
+        isAuth: authState.isAuth,
         login,
         logout,
-        user,
+        user: authState.user,
     };
 
     return (
-        <AuthContext.Provider value={data}>
-            {children}
+        <AuthContext.Provider value={contextValue}>
+            {authState.status === "done" ? (
+                children
+            ) : (
+                <p>Loading...</p>
+            )}
         </AuthContext.Provider>
-    )
+    );
 }
 
 export default AuthContextProvider;

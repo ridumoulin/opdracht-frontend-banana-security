@@ -2,17 +2,34 @@ import React, { useContext } from 'react';
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import axios from "axios";
+
 
 function SignIn() {
     const authContext = useContext(AuthContext);
 
     const { register, handleSubmit } = useForm();
+    const navigate = useNavigate();
+    const baseUrl = 'http://localhost:3000';
 
-    const handleLogin = (data) => {
+    const handleLogin = async (data) => {
         const { email } = data;
-        authContext.login(email);
+        await authContext.login(email);
+        signIn(data);
     };
 
+    async function signIn(data) {
+        try {
+            const response = await axios.post(`${baseUrl}/login`, data);
+            const { accesstoken } = response.data;
+            console.log("User signed in successfully:", accesstoken);
+            login(accesstoken);
+        } catch (error) {
+            console.error("Error met inloggen:", error.response.data);
+        } finally {
+            navigate('/profile')
+        }
+    }
 
   return (
     <>

@@ -5,13 +5,12 @@ import {AuthContext} from "../context/AuthContext";
 
 function NavBar() {
   const navigate = useNavigate();
-  const { isAuth, logout } = useContext(AuthContext);
+  const { isAuth, user, logout } = useContext(AuthContext);
 
   console.log("Authentication Status:", isAuth);
 
   const handleLogout = () => {
     logout();
-    // navigate('/');
   };
 
 
@@ -27,10 +26,13 @@ function NavBar() {
         </Link>
 
         <div>
-            {isAuth.isAuth ? (
-                <button type="button" onClick={handleLogout}>
+            {isAuth ? (
+                <>
+                    <p>Welkom {user}!</p>
+                    <button type="button" onClick={handleLogout}>
                     Uitloggen
-                </button>
+                    </button>
+                </>
             ) : (
                 <>
                     <button type="button" onClick={() => navigate('/signin')}>
